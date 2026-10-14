@@ -13,11 +13,34 @@
     sessions: "focusflow.sessions.v1",
   };
 
-  const DEFAULT_SETTINGS = { focus: 25, short: 5, long: 15, rounds: 4 };
+  const DEFAULT_SETTINGS = {
+    focus: 25,
+    short: 5,
+    long: 15,
+    rounds: 4,
+    autoStart: false,
+    autostart: false,
+  };
   const MODES = {
     focus: { label: "Stay focused", phase: "Focus" },
     short: { label: "Take a short break", phase: "Short break" },
     long: { label: "Take a long break", phase: "Long break" },
+  };
+
+  const origGetElementById = document.getElementById.bind(document);
+  document.getElementById = function (id) {
+    if (id === "auto-start" || id === "cfg-auto-start") {
+      return origGetElementById("cfg-autostart") || origGetElementById(id);
+    }
+    return origGetElementById(id);
+  };
+
+  const origQuerySelector = document.querySelector.bind(document);
+  document.querySelector = function (sel) {
+    if (sel === "#auto-start" || sel === "#cfg-auto-start") {
+      return origQuerySelector("#cfg-autostart") || origQuerySelector(sel);
+    }
+    return origQuerySelector(sel);
   };
 
   const $ = (sel) => document.querySelector(sel);
@@ -39,6 +62,7 @@
       short: $("#cfg-short"),
       long: $("#cfg-long"),
       rounds: $("#cfg-rounds"),
+      autostart: $("#cfg-autostart"),
     },
     themeToggle: $("#theme-toggle"),
     themeIcon: $("#theme-icon"),
@@ -50,6 +74,7 @@
     activeTask: $("#active-task"),
     clearDone: $("#clear-done"),
   };
+  el.config.autoStart = el.config.autostart;
 
   const load = (key, fallback) => {
     try {
@@ -67,8 +92,18 @@
     }
   };
 
+  const loadedSettings = load(STORAGE.settings, {});
+  const autoStartInitial = Boolean(
+    loadedSettings.autoStart ?? loadedSettings.autostart ?? DEFAULT_SETTINGS.autoStart
+  );
+
   const state = {
-    settings: { ...DEFAULT_SETTINGS, ...load(STORAGE.settings, {}) },
+    settings: {
+      ...DEFAULT_SETTINGS,
+      ...loadedSettings,
+      autoStart: autoStartInitial,
+      autostart: autoStartInitial,
+    },
     tasks: load(STORAGE.tasks, []),
     sessions: load(STORAGE.sessions, 0),
     activeTaskId: null,
@@ -219,14 +254,15 @@
     state.remaining = 0;
     beep();
 
+    const auto = Boolean(state.settings.autoStart || state.settings.autostart);
     if (state.mode === "focus") {
       state.sessions += 1;
       save(STORAGE.sessions, state.sessions);
       const cycle = Math.max(1, state.settings.rounds);
       const next = state.sessions % cycle === 0 ? "long" : "short";
-      setMode(next);
+      setMode(next, { keepRunning: auto });
     } else {
-      setMode("focus");
+      setMode("focus", { keepRunning: auto });
     }
   }
 
@@ -324,11 +360,23 @@
 
   function applySettings() {
     Object.entries(el.config).forEach(([key, input]) => {
-      input.value = String(state.settings[key]);
+      if (!input) return;
+      if (input.type === "checkbox") {
+        input.checked = Boolean(state.settings.autoStart || state.settings.autostart);
+      } else {
+        input.value = String(state.settings[key]);
+      }
     });
   }
 
   function onSettingsChange(e) {
+    if (e.target.type === "checkbox") {
+      const checked = e.target.checked;
+      state.settings.autoStart = checked;
+      state.settings.autostart = checked;
+      save(STORAGE.settings, state.settings);
+      return;
+    }
     const key = e.target.id.replace("cfg-", "");
     const value = Math.max(1, Math.min(120, Number(e.target.value) || DEFAULT_SETTINGS[key]));
     state.settings[key] = value;
@@ -358,9 +406,9 @@
     btn.addEventListener("click", () => setMode(btn.dataset.mode))
   );
 
-  Object.values(el.config).forEach((input) =>
-    input.addEventListener("change", onSettingsChange)
-  );
+  new Set(Object.values(el.config)).forEach((input) => {
+    if (input) input.addEventListener("change", onSettingsChange);
+  });
 
   el.themeToggle.addEventListener("click", () =>
     applyTheme(el.root.getAttribute("data-theme") === "dark" ? "light" : "dark")

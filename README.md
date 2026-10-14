@@ -14,6 +14,7 @@ Built as a mini app for **Global Hack Week: Hacktoberfest — CHALLENGE 1: Build
   of a short one.
 - **Task list** stored in `localStorage`, so tasks (and your timer setup) survive a
   reload. Add, complete, delete, or mark a task as the one you're focusing on.
+- **Optional auto-start** — flip one toggle and focus → break → focus runs hands-free.
 - **Tunable durations** — focus, short break, long break, and rounds-to-long-break.
 - **Dark / light theme** that remembers your choice.
 - A short chime and a live tab title (`24:58 · Focus`) so the timer is useful even
