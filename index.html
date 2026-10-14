@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="FocusFlow - a Pomodoro focus timer with a built-in task list." />
+  <title>FocusFlow — Focus Timer &amp; Tasks</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%8F%B1%EF%B8%8F%3C/text%3E%3C/svg%3E" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true">⏱</span>
+        <div>
+          <h1 class="brand__name">FocusFlow</h1>
+          <p class="brand__tag">Focus timer &amp; task list</p>
+        </div>
+      </div>
+      <button id="theme-toggle" class="icon-btn" title="Toggle theme" aria-label="Toggle theme">
+        <span id="theme-icon">🌙</span>
+      </button>
+    </header>
+
+    <main class="grid">
+      <!-- ── Timer card ─────────────────────────────────────────── -->
+      <section class="card timer" aria-labelledby="timer-heading">
+        <h2 id="timer-heading" class="sr-only">Pomodoro timer</h2>
+
+        <div class="modes" role="tablist" aria-label="Timer mode">
+          <button class="mode is-active" data-mode="focus" role="tab">Focus</button>
+          <button class="mode" data-mode="short" role="tab">Short break</button>
+          <button class="mode" data-mode="long" role="tab">Long break</button>
+        </div>
+
+        <div class="dial">
+          <svg viewBox="0 0 260 260" class="dial__svg" aria-hidden="true">
+            <circle class="dial__track" cx="130" cy="130" r="116" />
+            <circle id="dial-progress" class="dial__progress" cx="130" cy="130" r="116" />
+          </svg>
+          <div class="dial__content">
+            <div id="time" class="dial__time" aria-live="polite">25:00</div>
+            <div id="phase-label" class="dial__phase">Stay focused</div>
+            <div id="rounds" class="dial__rounds">Round 1 of 4</div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button id="start" class="btn btn--primary">Start</button>
+          <button id="reset" class="btn" title="Reset timer">Reset</button>
+          <button id="skip" class="btn" title="Skip to next phase">Skip</button>
+        </div>
+
+        <div class="session-dots" id="session-dots" aria-label="Completed focus sessions"></div>
+
+        <details class="settings">
+          <summary>Durations (minutes)</summary>
+          <div class="settings__row">
+            <label>Focus <input id="cfg-focus" type="number" min="1" max="90" value="25" /></label>
+            <label>Short <input id="cfg-short" type="number" min="1" max="30" value="5" /></label>
+            <label>Long <input id="cfg-long" type="number" min="1" max="60" value="15" /></label>
+            <label>Rounds <input id="cfg-rounds" type="number" min="1" max="12" value="4" /></label>
+          </div>
+        </details>
+      </section>
+
+      <!-- ── Tasks card ─────────────────────────────────────────── -->
+      <section class="card tasks" aria-labelledby="tasks-heading">
+        <div class="tasks__head">
+          <h2 id="tasks-heading">Tasks</h2>
+          <span id="task-count" class="pill">0 open</span>
+        </div>
+
+        <form id="task-form" class="task-form" autocomplete="off">
+          <input id="task-input" type="text" placeholder="What are you working on?" maxlength="120" aria-label="New task" />
+          <button type="submit" class="btn btn--primary">Add</button>
+        </form>
+
+        <p id="active-task" class="active-task" hidden></p>
+
+        <ul id="task-list" class="task-list" aria-label="Tasks"></ul>
+
+        <div id="task-empty" class="empty">
+          <span aria-hidden="true">✅</span>
+          <p>No tasks yet. Add one and start a focus round.</p>
+        </div>
+
+        <div class="tasks__foot">
+          <button id="clear-done" class="link-btn" type="button">Clear completed</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <span>FocusFlow · built as a GHW mini app</span>
+      <span>Everything stays in your browser</span>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
